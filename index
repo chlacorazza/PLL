@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLL/WLL · Attendance 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-base:#0a0c0e;
+  --bg-card:#131618;
+  --bg-raised:#1a1d22;
+  --bg-hover:#1f2329;
+  --line:rgba(255,255,255,0.055);
+  --line-mid:rgba(255,255,255,0.11);
+  --txt-1:#f2f0ec;
+  --txt-2:#b0b3bc;
+  --txt-3:#72757e;
+  --accent:#c8f135;
+  --accent-dim:rgba(200,241,53,0.1);
+  --green:#34d399;--purple:#a78bfa;--coral:#fb7185;--amber:#fbbf24;
+  --r-sm:6px;--r-md:10px;--r-lg:16px;
+}
+html,body{min-height:100%}
+body{font-family:'Barlow',sans-serif;background:var(--bg-base);color:var(--txt-1);padding:0;
+  background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);
+  background-size:48px 48px;}
+
+/* ── HERO HEADER ── */
+.hero{background:linear-gradient(135deg,#0d1117 0%,#111620 50%,#0d1117 100%);border-bottom:1px solid var(--line-mid);padding:2rem 2rem 1.5rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -20%,rgba(200,241,53,0.06) 0%,transparent 70%);pointer-events:none}
+.hero-inner{max-width:900px;margin:0 auto;position:relative}
+.league-logos{display:flex;align-items:center;gap:20px;margin-bottom:1.25rem;flex-wrap:wrap}
+.league-logo-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+.league-divider{width:1px;height:48px;background:var(--line-mid)}
+.league-label{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--txt-3)}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:800;color:var(--txt-1);line-height:1;letter-spacing:-0.01em;margin-bottom:6px}
+.hero-sub{font-size:13px;color:var(--txt-2);font-weight:300}
+.hero-meta{display:flex;align-items:center;gap:12px;margin-top:1rem;flex-wrap:wrap}
+.meta-chip{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:5px 12px;border-radius:var(--r-sm);border:1px solid}
+.chip-accent{color:var(--accent);border-color:rgba(200,241,53,0.35);background:var(--accent-dim)}
+.chip-muted{color:var(--txt-3);border-color:var(--line-mid);background:transparent}
+
+/* ── SHELL ── */
+.shell{max-width:900px;margin:0 auto;padding:1.75rem 2rem 3rem}
+
+/* ── METRICS ── */
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.75rem}
+.metric{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-md);padding:1rem 1.1rem;position:relative;overflow:hidden;animation:fadeUp 0.4s ease both}
+.metric::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.metric:nth-child(1)::after{background:var(--accent)}
+.metric:nth-child(2)::after{background:var(--green)}
+.metric:nth-child(3)::after{background:var(--coral)}
+.metric:nth-child(4)::after{background:var(--amber)}
+.metric:nth-child(1){animation-delay:.05s}.metric:nth-child(2){animation-delay:.10s}
+.metric:nth-child(3){animation-delay:.15s}.metric:nth-child(4){animation-delay:.20s}
+.metric-label{font-size:10px;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:8px;font-family:'Barlow Condensed',sans-serif;font-weight:600}
+.metric-value{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:700;color:var(--txt-1);line-height:1}
+.metric-sub{font-size:11px;color:var(--txt-3);margin-top:5px}
+
+/* ── FILTERS ── */
+.filters{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center}
+.filter-label{font-size:10px;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.1em;font-family:'Barlow Condensed',sans-serif;font-weight:600;margin-right:2px}
+.filter-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;background:transparent;border:1px solid var(--line-mid);border-radius:var(--r-sm);padding:5px 14px;color:var(--txt-2);cursor:pointer;transition:all .15s}
+.filter-btn:hover{background:var(--bg-hover);color:var(--txt-1)}
+.filter-btn.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(200,241,53,0.4)}
+
+/* ── TABLE ── */
+.table-head{display:grid;grid-template-columns:90px 1fr 72px 80px 60px;padding:0 10px 8px;border-bottom:1px solid var(--line-mid)}
+.table-head span{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.1em}
+.table-head span:nth-child(n+3){text-align:right}
+.event-row{display:grid;grid-template-columns:90px 1fr 72px 80px 60px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);border-radius:var(--r-sm);transition:background .12s;cursor:default}
+.event-row:hover{background:var(--bg-hover)}
+.event-row:last-child{border-bottom:none}
+.event-date{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:500;color:var(--txt-2)}
+.event-matchups{display:flex;flex-direction:column;gap:5px}
+.matchup-line{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt-2)}
+.team-badge{display:inline-flex;align-items:center;gap:5px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.03em}
+.team-icon{width:20px;height:20px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.vs-dot{font-size:10px;color:var(--txt-3);font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:0.05em}
+.tag{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:2px 7px;border-radius:4px}
+.tag-champ{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25)}
+.tag-semi{background:rgba(167,139,250,.12);color:#a78bfa;border:1px solid rgba(167,139,250,.25)}
+.tag-group{background:rgba(139,141,147,.08);color:var(--txt-2);border:1px solid var(--line-mid)}
+.ev-sold{font-family:'Barlow Condensed',sans-serif;font-size:14px;text-align:right;color:var(--txt-2)}
+.ev-att{font-family:'Barlow Condensed',sans-serif;font-size:14px;text-align:right;color:var(--txt-1);font-weight:600}
+.pct-cell{text-align:right;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700}
+
+/* ── CHART ── */
+.chart-section{margin-top:1.75rem;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-lg);padding:1.25rem 1.25rem 1rem}
+.chart-lbl{font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.12em;font-weight:600;margin-bottom:1rem}
+.chart-wrap{position:relative;width:100%;height:220px}
+.legend{margin-top:14px;display:flex;gap:20px;font-size:11px;color:var(--txt-3);flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:6px}
+.ld{width:10px;height:10px;border-radius:2px;display:inline-block;flex-shrink:0}
+.ld-dash{width:18px;height:0;border-top:2px dashed #72757e;display:inline-block;flex-shrink:0}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .table-head,.event-row{grid-template-columns:68px 1fr 54px 62px 50px;padding-left:6px;padding-right:6px}
+  .shell{padding:1.25rem 1rem 2rem}
+  .hero{padding:1.5rem 1rem 1.25rem}
+  .hero-title{font-size:28px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-inner">
+          <div class="league-logos">
+        <img src="https://raw.githubusercontent.com/chlacorazza/PLL/main/PLL__Square_Logo_Social.png" alt="PLL" style="height:52px;width:52px;object-fit:contain;border-radius:8px;">
+        <div class="league-divider"></div>
+        <img src="https://raw.githubusercontent.com/chlacorazza/PLL/main/Women%27s_Lacrosse_League.svg.png" alt="WLL" style="height:52px;width:auto;max-width:64px;object-fit:contain;border-radius:8px;">
+        <div class="league-divider"></div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;color:var(--txt-2);letter-spacing:0.05em">Championship Series</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--txt-3);margin-top:2px">Feb 11–17 · The St. James · Springfield, VA</div>
+        </div>
+      </div>
+      <h1 class="hero-title">Ticket Show-Up Rate</h1>
+    <p class="hero-sub">Percentage of sold tickets that resulted in actual attendance across all 9 events</p>
+    <div class="hero-meta">
+      <span class="meta-chip chip-accent">2025 Season</span>
+      <span class="meta-chip chip-muted">9 Events</span>
+      <span class="meta-chip chip-muted">PLL + WLL</span>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+
+  <div class="metrics">
+    <div class="metric"><p class="metric-label">Overall show-up rate</p><p class="metric-value">64.5%</p><p class="metric-sub">9 events total</p></div>
+    <div class="metric"><p class="metric-label">Total tickets sold</p><p class="metric-value">15,364</p><p class="metric-sub">across all events</p></div>
+    <div class="metric"><p class="metric-label">Total no-shows</p><p class="metric-value">5,219</p><p class="metric-sub">35.5% of sold</p></div>
+    <div class="metric"><p class="metric-label">Championship rate</p><p class="metric-value">85.3%</p><p class="metric-sub">highest of series</p></div>
+  </div>
+
+  <div class="filters">
+    <span class="filter-label">Filter</span>
+    <button class="filter-btn active" onclick="filter('all',this)">All events</button>
+    <button class="filter-btn" onclick="filter('wll',this)">WLL only</button>
+    <button class="filter-btn" onclick="filter('pll',this)">PLL only</button>
+    <button class="filter-btn" onclick="filter('semi',this)">Semis</button>
+    <button class="filter-btn" onclick="filter('champ',this)">Championship</button>
+  </div>
+
+  <div class="table-head">
+    <span>Date</span><span>Matchups</span>
+    <span style="text-align:right">Sold</span>
+    <span style="text-align:right">Attended</span>
+    <span style="text-align:right">Rate</span>
+  </div>
+  <div id="rows"></div>
+
+  <div class="chart-section">
+    <p class="chart-lbl">Show-up % by event — chronological</p>
+    <div class="chart-wrap"><canvas id="chart"></canvas></div>
+    <div class="legend">
+      <span><span class="ld" style="background:#c8f135"></span>75%+ strong</span>
+      <span><span class="ld" style="background:#a78bfa"></span>55–74% mid</span>
+      <span><span class="ld" style="background:#fb7185"></span>&lt;55% low</span>
+      <span><span class="ld-dash"></span>Series avg 64.5%</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Team badge definitions: color + 2-letter abbrev
+const TEAMS = {
+  'Charm':    {bg:'#D4281C', fg:'#F5C518', ab:'CH', league:'wll', img:'https://raw.githubusercontent.com/chlacorazza/PLL/main/wll_maryland_charm_logo.png'},
+  'Charging': {bg:'#1B3A6B', fg:'#C8A84B', ab:'NY', league:'wll', img:'https://raw.githubusercontent.com/chlacorazza/PLL/main/wll_new_york_charging_logo.png'},
+  'Whips':    {bg:'#D4281C', fg:'#F5C518', ab:'WH', league:'pll', img:'https://raw.githubusercontent.com/chlacorazza/PLL/main/PLL-WHIPSNAKES-PRIM-STICKER_1.png.png'},
+  'Atlas':    {bg:'#1B3A6B', fg:'#C8A84B', ab:'AT', league:'pll', img:'https://raw.githubusercontent.com/chlacorazza/PLL/main/New_York_Atlas.jpg'},
+  'Cannons':  {bg:'#003087', fg:'#C8102E', ab:'BC', league:'pll', img:'https://raw.githubusercontent.com/chlacorazza/PLL/main/Boston_Cannons.jpg'},
+  'Archers':  {bg:'#002D72', fg:'#FF6B00', ab:'UA', league:'pll', img:'https://raw.githubusercontent.com/chlacorazza/PLL/main/PLL-ARCHERS-PRIM-STICKER_1.png.png'},
+  'Guard':    {bg:'#003087', fg:'#C8102E', ab:'GU', league:'wll', img:'https://raw.githubusercontent.com/chlacorazza/PLL/main/wll_boston_guard_logo.png'},
+  'Palms':    {bg:'#1A6B3C', fg:'#F5C518', ab:'CA', league:'wll', img:'https://raw.githubusercontent.com/chlacorazza/PLL/main/wll_california_palms24.png'},
+};
+
+function badge(name) {
+  const t = TEAMS[name] || {bg:'#444',fg:'#fff',ab:name.slice(0,2).toUpperCase()};
+  const iconHTML = t.img
+    ? `<img src="${t.img}" style="width:22px;height:22px;object-fit:contain;border-radius:3px;background:#000;">`
+    : `<span class="team-icon" style="background:${t.bg}"><svg width="20" height="20" viewBox="0 0 20 20"><text x="10" y="14" font-family="'Barlow Condensed',sans-serif" font-size="8" font-weight="800" fill="${t.fg}" text-anchor="middle">${t.ab}</text></svg></span>`;
+  return `<span class="team-badge">${iconHTML}<span style="color:var(--txt-1)">${name}</span></span>`;
+}
+
+const events = [
+  {date:'Feb 11',   sold:1268, att:340,  pct:26.81, round:'group', league:'both',
+   wllGames:[['Charm','Charging']], pllGames:[['Whips','Atlas']]},
+  {date:'Feb 12',   sold:1270, att:664,  pct:52.28, round:'group', league:'both',
+   wllGames:[['Guard','Palms']], pllGames:[['Cannons','Archers']]},
+  {date:'Feb 13',   sold:1501, att:913,  pct:60.83, round:'group', league:'both',
+   wllGames:[['Charm','Guard']], pllGames:[['Whips','Cannons']]},
+  {date:'Feb 14',   sold:1325, att:879,  pct:66.34, round:'group', league:'both',
+   wllGames:[['Palms','Charging']], pllGames:[['Atlas','Archers']]},
+  {date:'Feb 15 AM',sold:2221, att:1709, pct:76.95, round:'group', league:'both',
+   wllGames:[['Charm','Palms'],['Charging','Guard']], pllGames:[]},
+  {date:'Feb 15 PM',sold:2274, att:1728, pct:75.99, round:'group', league:'both',
+   wllGames:[], pllGames:[['Atlas','Cannons'],['Whips','Archers']]},
+  {date:'Feb 16 AM',sold:1431, att:772,  pct:53.95, round:'semi',  league:'wll',
+   wllGames:[['Charging','Palms']], pllGames:[]},
+  {date:'Feb 16 PM',sold:1704, att:1118, pct:65.61, round:'semi',  league:'pll',
+   wllGames:[], pllGames:[['Atlas','Cannons']]},
+  {date:'Feb 17',   sold:2370, att:2022, pct:85.32, round:'champ', league:'both',
+   wllGames:[['Guard','Charging']], pllGames:[['Cannons','Archers']]},
+];
+
+function isKnownTeam(n){return !!TEAMS[n];}
+function matchupHTML(e,round,viewMode){
+  // Determine which games to show based on view mode
+  let games=[];
+  if(viewMode==='wll') games=e.wllGames||[];
+  else if(viewMode==='pll') games=e.pllGames||[];
+  else games=[...(e.wllGames||[]),...(e.pllGames||[])];
+
+  if(round==='champ'){
+    if(viewMode==='wll') return `<span class="matchup-line">${badge('Guard')} <span class="vs-dot">VS</span> ${badge('Charging')}<span class="tag tag-champ" style="margin-left:6px">WLL Final</span></span>`;
+    if(viewMode==='pll') return `<span class="matchup-line">${badge('Cannons')} <span class="vs-dot">VS</span> ${badge('Archers')}<span class="tag tag-champ" style="margin-left:6px">PLL Final</span></span>`;
+    return `<span class="matchup-line">${badge('Guard')} <span class="vs-dot">VS</span> ${badge('Charging')}<span class="tag tag-champ" style="margin-left:6px">WLL Final</span></span><span class="matchup-line">${badge('Cannons')} <span class="vs-dot">VS</span> ${badge('Archers')}<span class="tag tag-champ" style="margin-left:6px">PLL Final</span></span>`;
+  }
+  if(!games.length) return `<span class="matchup-line"><span style="color:var(--txt-3);font-size:11px;font-style:italic">No matchups this session</span></span>`;
+  return games.map(([a,b])=>{
+    if(!b) return `<span class="matchup-line"><span style="color:var(--txt-2);font-size:12px">${a}</span></span>`;
+    return `<span class="matchup-line">${isKnownTeam(a)?badge(a):`<span style="color:var(--txt-1);font-family:'Barlow Condensed',sans-serif;font-weight:600">${a}</span>`} <span class="vs-dot">VS</span> ${isKnownTeam(b)?badge(b):`<span style="color:var(--txt-1);font-family:'Barlow Condensed',sans-serif;font-weight:600">${b}</span>`}</span>`;
+  }).join('');
+}
+function tagHTML(r){
+  if(r==='champ') return '<span class="tag tag-champ" style="align-self:flex-start">Final</span>';
+  if(r==='semi')  return '<span class="tag tag-semi" style="align-self:flex-start">Semis</span>';
+  return '<span class="tag tag-group" style="align-self:flex-start">Group</span>';
+}
+const col=p=>p>=75?'#c8f135':p>=55?'#a78bfa':'#fb7185';
+
+let active='all', chart;
+function renderRows(){
+  let list=events;
+  if(active==='wll') list=events.filter(e=>e.league==='wll'||e.league==='both');
+  else if(active==='pll') list=events.filter(e=>e.league==='pll'||e.league==='both');
+  else if(active!=='all') list=events.filter(e=>e.round===active);
+  document.getElementById('rows').innerHTML=list.map(e=>`
+    <div class="event-row">
+      <span class="event-date">${e.date}</span>
+      <span class="event-matchups">${matchupHTML(e,e.round,active)} ${tagHTML(e.round)}</span>
+      <span class="ev-sold">${e.sold.toLocaleString()}</span>
+      <span class="ev-att">${e.att.toLocaleString()}</span>
+      <span class="pct-cell" style="color:${col(e.pct)}">${e.pct.toFixed(1)}%</span>
+    </div>`).join('');
+}
+function updateChart(){
+  let list=events;
+  if(active==='wll') list=events.filter(e=>e.league==='wll'||e.league==='both');
+  else if(active==='pll') list=events.filter(e=>e.league==='pll'||e.league==='both');
+  else if(active!=='all') list=events.filter(e=>e.round===active);
+  chart.data.labels=list.map(e=>e.date);
+  chart.data.datasets[0].data=list.map(e=>e.pct);
+  chart.data.datasets[0].backgroundColor=list.map(e=>col(e.pct));
+  chart.data.datasets[1].data=list.map(()=>64.5);
+  chart.update();
+}
+function filter(f,btn){
+  active=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRows();updateChart();
+}
+renderRows();
+chart=new Chart(document.getElementById('chart'),{
+  type:'bar',
+  data:{
+    labels:events.map(e=>e.date),
+    datasets:[
+      {data:events.map(e=>e.pct),backgroundColor:events.map(e=>col(e.pct)),borderRadius:4,barPercentage:0.6},
+      {data:events.map(()=>64.5),type:'line',borderColor:'#72757e',borderDash:[5,4],borderWidth:1.5,pointRadius:0,fill:false}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1d22',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,titleColor:'#f2f0ec',bodyColor:'#b0b3bc',padding:10,
+      callbacks:{label:ctx=>ctx.datasetIndex===1?' Series avg: 64.5%':` Show-up: ${ctx.raw.toFixed(1)}%`}}},
+    scales:{
+      x:{grid:{display:false},border:{display:false},ticks:{color:'#72757e',font:{family:"'Barlow Condensed'",size:11,weight:'600'},autoSkip:false,maxRotation:40}},
+      y:{min:0,max:100,grid:{color:'rgba(255,255,255,0.032)'},border:{display:false},ticks:{color:'#72757e',font:{family:"'Barlow Condensed'",size:11},callback:v=>v+'%'}}
+    }
+  }
+});
+</script>
+</body>
+</html>
